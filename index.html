@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sosialisasi PKL 2026 - SMKN 2 Tasikmalaya</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; overflow: hidden; }
+        .presentation { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; padding: 25px 40px; opacity: 0; transform: translateX(30px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        .slide.active { display: flex; opacity: 1; transform: translateX(0); }
+        .slide.exit { opacity: 0; transform: translateX(-30px); }
+        
+        /* Animation keyframes */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        
+        .slide.active .slide-header { animation: fadeInUp 0.6s ease-out 0.1s both; }
+        .slide.active .content-left { animation: fadeInLeft 0.6s ease-out 0.2s both; }
+        .slide.active .content-right { animation: fadeInRight 0.6s ease-out 0.3s both; }
+        .slide.active .chart-container { animation: scaleIn 0.6s ease-out 0.3s both; }
+        .slide.active .stat-card { animation: fadeInUp 0.5s ease-out both; }
+        .slide.active .stat-card:nth-child(1) { animation-delay: 0.2s; }
+        .slide.active .stat-card:nth-child(2) { animation-delay: 0.3s; }
+        .slide.active .stat-card:nth-child(3) { animation-delay: 0.4s; }
+        .slide.active .stat-card:nth-child(4) { animation-delay: 0.5s; }
+        .slide.active .info-card { animation: fadeInUp 0.5s ease-out both; }
+        .slide.active .info-card:nth-child(1) { animation-delay: 0.2s; }
+        .slide.active .info-card:nth-child(2) { animation-delay: 0.3s; }
+        .slide.active .info-card:nth-child(3) { animation-delay: 0.4s; }
+        .slide.active .info-card:nth-child(4) { animation-delay: 0.5s; }
+        
+        /* Opening Slide with Cover Image */
+        .slide-opening { 
+            background: linear-gradient(135deg, rgba(30, 58, 95, 0.85) 0%, rgba(15, 23, 42, 0.9) 50%, rgba(30, 41, 59, 0.85) 100%),
+                        url('cover_bg.webp') center/cover no-repeat;
+            justify-content: center; align-items: center; text-align: center; padding: 40px;
+        }
+        .logo-row { display: flex; justify-content: center; align-items: center; gap: 25px; margin-bottom: 25px; }
+        .logo-img { height: 70px; width: auto; filter: drop-shadow(0 4px 15px rgba(0,0,0,0.3)); }
+        .logo-img.large { height: 90px; }
+        .main-title { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; text-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+        .sub-title { font-size: 1.6rem; color: #f59e0b; font-weight: 700; margin-bottom: 8px; letter-spacing: 1px; }
+        .school-name { font-size: 1.4rem; color: #e2e8f0; font-weight: 600; letter-spacing: 0.5px; }
+        .year-badge { margin-top: 20px; padding: 10px 30px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50px; font-size: 1rem; font-weight: 700; color: #1e293b; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3); }
+        
+        .slide-header { margin-bottom: 15px; flex-shrink: 0; }
+        .slide-number { font-size: 1rem; color: #f59e0b; font-weight: 600; margin-bottom: 3px; }
+        .slide-title { font-size: 2.4rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+        .slide-subtitle { font-size: 1.15rem; color: #94a3b8; }
+        
+        .slide-content { flex: 1; display: flex; gap: 25px; overflow: hidden; min-height: 0; }
+        .content-left, .content-right { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+        .content-full { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+        
+        /* 3D Chart Container */
+        .chart-container { 
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border-radius: 16px; padding: 20px; 
+            border: 1px solid rgba(148, 163, 184, 0.15); 
+            flex: 1; min-height: 280px; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+        }
+        .chart-container::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.3), transparent);
+        }
+        .chart-container canvas { max-width: 100% !important; max-height: 100% !important; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
+        .stat-card { background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); border-radius: 12px; padding: 14px; border: 1px solid rgba(148, 163, 184, 0.1); text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .stat-value { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .stat-label { font-size: 1rem; color: #94a3b8; margin-top: 3px; }
+        
+        .highlight-box { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.08) 100%); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .highlight-box h3 { color: #f59e0b; font-size: 1.3rem; margin-bottom: 6px; }
+        .highlight-box p { color: #e2e8f0; font-size: 1.1rem; line-height: 1.6; }
+        
+        .table-container { background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); border-radius: 12px; padding: 12px; border: 1px solid rgba(148, 163, 184, 0.1); flex: 1; overflow: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 1.05rem; }
+        .data-table th { background: rgba(245, 158, 11, 0.15); padding: 10px 12px; text-align: left; font-weight: 600; color: #f59e0b; position: sticky; top: 0; }
+        .data-table td { padding: 8px 12px; border-bottom: 1px solid rgba(148, 163, 184, 0.08); }
+        .data-table tr:hover { background: rgba(245, 158, 11, 0.05); }
+        
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 15px; font-size: 0.65rem; font-weight: 600; }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-purple { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+        
+        .key-points { background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); border-radius: 12px; padding: 16px; border: 1px solid rgba(148, 163, 184, 0.1); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .key-point { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        .key-point:last-child { margin-bottom: 0; }
+        .point-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3); }
+        .point-text { font-size: 1.1rem; color: #e2e8f0; line-height: 1.6; }
+        
+        .info-cards { display: flex; flex-direction: column; gap: 10px; }
+        .info-card { background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); border-radius: 12px; padding: 14px 16px; border: 1px solid rgba(148, 163, 184, 0.1); display: flex; align-items: center; gap: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .info-icon { width: 44px; height: 44px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+        .info-text h4 { font-size: 1.15rem; color: #f8fafc; margin-bottom: 3px; }
+        .info-text p { font-size: 1rem; color: #94a3b8; }
+        
+        .slide-closing { background: linear-gradient(135deg, rgba(30, 58, 95, 0.9) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(30, 41, 59, 0.9) 100%), url('cover_bg.webp') center/cover no-repeat; justify-content: center; align-items: center; text-align: center; }
+        .closing-title { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; }
+        .closing-text { font-size: 1rem; color: #94a3b8; line-height: 1.5; margin-bottom: 25px; max-width: 650px; }
+        .closing-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; flex-wrap: wrap; }
+        .closing-stat { text-align: center; background: rgba(30, 41, 59, 0.8); padding: 15px 25px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.1); }
+        .closing-stat-value { font-size: 2rem; font-weight: 800; color: #f59e0b; }
+        .closing-stat-label { font-size: 0.75rem; color: #94a3b8; }
+        .thank-you { font-size: 1.2rem; color: #f8fafc; font-weight: 600; }
+        
+        /* Map Section */
+        .map-section { display: flex; gap: 15px; flex: 1; min-height: 0; }
+        .company-list-panel { width: 320px; display: flex; flex-direction: column; gap: 10px; overflow: visible; }
+        .region-tabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+        .region-tab { padding: 6px 12px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; color: #94a3b8; }
+        .region-tab:hover, .region-tab.active { background: #f59e0b; color: #1e293b; border-color: #f59e0b; }
+        .company-cards { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+        .company-card { background: rgba(30, 41, 59, 0.8); border-radius: 10px; padding: 12px; border: 1px solid rgba(148, 163, 184, 0.1); cursor: pointer; transition: all 0.3s; flex-shrink: 0; }
+        .company-card:hover { border-color: #f59e0b; transform: translateX(5px); }
+        .company-card.selected { background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; }
+        .company-card h5 { color: #f8fafc; font-size: 0.95rem; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+        .company-card h5 .marker { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .company-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.4; }
+        
+        .map-panel { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .map-container { flex: 1; border-radius: 12px; overflow: hidden; border: 1px solid rgba(148, 163, 184, 0.2); min-height: 300px; }
+        .map-container iframe { width: 100%; height: 100%; border: none; }
+        .map-legend { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; padding: 10px; background: rgba(30, 41, 59, 0.8); border-radius: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #94a3b8; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+        
+        .nav-controls { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; z-index: 100; }
+        .nav-btn { width: 40px; height: 40px; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 50%; color: #f8fafc; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .nav-btn:hover { background: #f59e0b; color: #1e293b; }
+        .slide-indicator { display: flex; gap: 5px; }
+        .indicator-dot { width: 7px; height: 7px; background: rgba(148, 163, 184, 0.3); border-radius: 50%; cursor: pointer; transition: all 0.3s ease; }
+        .indicator-dot.active { background: #f59e0b; width: 22px; border-radius: 4px; }
+        
+        .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); z-index: 100; transition: width 0.3s ease; }
+        
+
+
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 1024px) {
+            .slide { padding: 20px 25px; }
+            .slide-content { gap: 15px; }
+            .company-list-panel { width: 280px; }
+            .map-section { gap: 12px; }
+        }
+
+        @media (max-width: 768px) {
+            /* Allow scrolling on mobile */
+            body { overflow: auto; }
+            .presentation { height: auto; min-height: 100vh; overflow: visible; }
+            .slide { 
+                position: relative; 
+                height: auto; 
+                min-height: 100vh; 
+                padding: 15px 20px 80px 20px; /* Extra padding at bottom for nav */
+                overflow: visible;
+            }
+            .slide.active { display: flex; }
+            
+            .slide-header { margin-bottom: 12px; }
+            .slide-title { font-size: 1.8rem; }
+            .slide-subtitle { font-size: 1rem; }
+            .slide-number { font-size: 0.85rem; }
+            
+            /* Hide speaker notes on mobile */
+            .speaker-notes { display: none !important; }
+            
+            .slide-content { flex-direction: column; gap: 12px; }
+            .content-left, .content-right { flex: none; width: 100%; }
+            
+            /* Map Section Mobile */
+            .map-section { flex-direction: column; height: auto; min-height: 500px; }
+            .company-list-panel { width: 100%; max-height: 200px; min-height: 150px; overflow: visible; }
+            .company-cards { max-height: 120px; overflow-y: auto; min-height: 80px; }
+            .region-tabs { justify-content: center; flex-wrap: wrap; }
+            .region-tab { padding: 6px 10px; font-size: 0.8rem; }
+            
+            .map-panel { min-height: 300px !important; height: 300px; flex: 1; }
+            .map-container { min-height: 280px !important; height: 280px !important; }
+            #leafletMap { min-height: 280px !important; height: 280px !important; }
+            .map-legend { gap: 8px; padding: 8px; flex-wrap: wrap; }
+            .legend-item { font-size: 0.75rem; }
+            .legend-dot { width: 10px; height: 10px; }
+            
+            /* Navigation */
+            .nav-controls { bottom: 10px; gap: 8px; }
+            .nav-btn { width: 38px; height: 38px; font-size: 1rem; }
+            .indicator-dot { width: 8px; height: 8px; }
+            .indicator-dot.active { width: 20px; }
+            
+            /* Stats and cards */
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card { padding: 14px; }
+            .stat-value { font-size: 1.8rem; }
+            .stat-label { font-size: 0.9rem; }
+            
+            /* Highlight box */
+            .highlight-box h3 { font-size: 1.15rem; }
+            .highlight-box p { font-size: 1rem; }
+            
+            /* Key points */
+            .point-icon { width: 28px; height: 28px; font-size: 0.85rem; }
+            .point-text { font-size: 1rem; }
+            
+            /* Info cards */
+            .info-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+            .info-text h4 { font-size: 1rem; }
+            .info-text p { font-size: 0.9rem; }
+            
+            /* Tables */
+            .data-table { font-size: 0.95rem; }
+            
+            /* Charts - Tablet */
+            .chart-container { 
+                min-height: 220px; 
+                padding: 15px; 
+            }
+            .chart-container canvas {
+                max-height: 200px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .slide { 
+                padding: 12px 15px 85px 15px; /* Extra padding at bottom for nav */
+            }
+            .slide-title { font-size: 1.4rem; }
+            .slide-subtitle { font-size: 0.85rem; }
+            .slide-number { font-size: 0.75rem; }
+            
+            /* Slide content stacking */
+            .slide-content { 
+                flex-direction: column; 
+                gap: 10px;
+            }
+            .content-left, .content-right { 
+                flex: none; 
+                width: 100%; 
+                min-height: auto;
+            }
+            
+            /* Charts - Mobile */
+            .chart-container { 
+                min-height: 180px; 
+                max-height: 220px;
+                padding: 12px; 
+                margin-bottom: 8px;
+            }
+            .chart-container canvas {
+                max-height: 160px !important;
+            }
+            
+            /* Stats Grid on Mobile - 2x2 compact */
+            .stats-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 6px; 
+                margin-bottom: 8px;
+            }
+            .stat-card { 
+                padding: 10px 8px; 
+            }
+            .stat-value { font-size: 1.4rem; }
+            .stat-label { font-size: 0.75rem; }
+            
+            /* Map Section Mobile Small */
+            .map-section { min-height: 450px; }
+            .company-list-panel { max-height: 180px; min-height: 120px; }
+            .company-cards { max-height: 100px; min-height: 60px; overflow-y: auto; }
+            .company-card { padding: 8px; }
+            .company-card h5 { font-size: 0.85rem; }
+            .company-card p { font-size: 0.75rem; }
+            .region-tab { padding: 5px 8px; font-size: 0.75rem; }
+            
+            .map-panel { height: 250px !important; min-height: 250px !important; }
+            .map-container { height: 230px !important; min-height: 230px !important; }
+            #leafletMap { height: 230px !important; min-height: 230px !important; }
+            
+            .map-panel { min-height: 250px; }
+            .map-container { min-height: 200px; }
+            .map-legend { flex-wrap: wrap; gap: 8px; }
+            .legend-item { font-size: 0.8rem; }
+            
+            /* Highlight box - Compact */
+            .highlight-box { padding: 12px; margin-bottom: 8px; }
+            .highlight-box h3 { font-size: 1rem; }
+            .highlight-box p { font-size: 0.85rem; line-height: 1.4; }
+            
+            /* Key points - Compact */
+            .key-points { padding: 12px; }
+            .key-point { padding: 0; margin-bottom: 8px; gap: 8px; }
+            .point-icon { width: 24px; height: 24px; font-size: 0.75rem; }
+            .point-text { font-size: 0.85rem; line-height: 1.4; }
+            
+            /* Info cards - Compact */
+            .info-cards { gap: 6px; }
+            .info-card { padding: 10px; gap: 8px; }
+            .info-icon { width: 32px; height: 32px; font-size: 1rem; }
+            .info-text h4 { font-size: 0.85rem; }
+            .info-text p { font-size: 0.75rem; }
+            
+            /* Tables - Compact */
+            .table-container { padding: 10px; }
+            .data-table { font-size: 0.8rem; }
+            .data-table th, .data-table td { padding: 6px 8px; }
+            .badge { font-size: 0.6rem; padding: 2px 6px; }
+            
+            /* Closing slide */
+            .closing-title { font-size: 1.4rem; }
+            .closing-text { font-size: 0.85rem; max-width: 100%; }
+            .closing-stats { 
+                gap: 10px; 
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .closing-stat { 
+                padding: 10px 15px; 
+                min-width: 70px;
+            }
+            .closing-stat-value { font-size: 1.4rem; }
+            .closing-stat-label { font-size: 0.7rem; }
+            
+            /* Navigation on mobile */
+            .nav-controls { bottom: 8px; }
+            .nav-btn { width: 32px; height: 32px; font-size: 0.9rem; }
+        }
+
+        /* Extra small screens (below 360px) */
+        @media (max-width: 360px) {
+            .slide { padding: 10px 12px; }
+            .slide-title { font-size: 1.2rem; }
+            .slide-subtitle { font-size: 0.75rem; }
+            
+            .chart-container { 
+                min-height: 150px; 
+                max-height: 180px;
+                padding: 10px;
+            }
+            .chart-container canvas {
+                max-height: 130px !important;
+            }
+            
+            .stats-grid { gap: 5px; }
+            .stat-card { padding: 8px 6px; }
+            .stat-value { font-size: 1.2rem; }
+            .stat-label { font-size: 0.65rem; }
+            
+            .highlight-box { padding: 10px; }
+            .highlight-box h3 { font-size: 0.9rem; }
+            .highlight-box p { font-size: 0.75rem; }
+            
+            .key-point { margin-bottom: 6px; }
+            .point-icon { width: 20px; height: 20px; font-size: 0.65rem; }
+            .point-text { font-size: 0.75rem; }
+            
+            .info-card { padding: 8px; gap: 6px; }
+            .info-icon { width: 28px; height: 28px; font-size: 0.9rem; }
+            .info-text h4 { font-size: 0.75rem; }
+            .info-text p { font-size: 0.65rem; }
+            
+            .closing-title { font-size: 1.2rem; }
+            .closing-stat { padding: 8px 12px; }
+            .closing-stat-value { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+
+    <div class="presentation">
+        <!-- SLIDE 1: Opening with Logos & Cover -->
+        <div class="slide slide-opening active" data-notes="Assalamualaikum Wr. Wb. Selamat datang di acara sosialisasi PKL Tahun 2026. Presentasi ini menyajikan hasil survei dari 141 siswa Kelas XI Teknik Mesin.">
+            <div>
+                <div class="logo-row">
+                    <img src="logo_tutwuri.webp" alt="Tut Wuri Handayani" class="logo-img">
+                    <img src="logo_smkn2.webp" alt="SMKN 2 Tasikmalaya" class="logo-img large">
+                    <img src="logo_teknik_mesin.webp" alt="Teknik Mesin" class="logo-img large">
+                    <img src="logo_smk_bisa.webp" alt="SMK Bisa Hebat" class="logo-img" style="height: 55px;">
+                </div>
+                <h1 class="main-title">SOSIALISASI PERSIAPAN PRAKTIK KERJA LAPANGAN</h1>
+                <h2 class="sub-title">PROGRAM KEAHLIAN TEKNIK MESIN</h2>
+                <p class="school-name">SMK NEGERI 2 TASIKMALAYA</p>
+                <div class="year-badge">23 DESEMBER 2025 - TAHUN AJARAN 2025/2026</div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Pembukaan & Visi Bersama dengan Video -->
+        <div class="slide" data-notes="Sampaikan salam dan sambutan hangat kepada orang tua siswa. Jelaskan tujuan pertemuan ini.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 2 dari 10</div>
+                <h2 class="slide-title">🙏 Assalamualaikum Wr. Wb.</h2>
+                <p class="slide-subtitle">Selamat Datang di Sosialisasi PKL SMKN 2 KOTA TASIKMALAYA - PROGRAM KEAHLIAN TEKNIK MESIN</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="video-container" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9)); border-radius: 16px; padding: 15px; border: 1px solid rgba(148, 163, 184, 0.15); height: 100%; display: flex; flex-direction: column;">
+                        <h4 style="color: #f59e0b; margin-bottom: 12px; font-size: 0.9rem;">🎬 Profile Teknik Mesin SMKN 2 Tasikmalaya</h4>
+                        <div style="flex: 1; background: #0f172a; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <!-- Video from Google Drive - iframe embed -->
+                            <iframe 
+                                src="https://drive.google.com/file/d/1YlT9R1uKU3bP6bO5FTa-VQc08ECUA5FX/preview" 
+                                width="100%" 
+                                height="100%" 
+                                style="border: none; border-radius: 12px;"
+                                allow="autoplay; encrypted-media"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <p style="text-align: center; color: #64748b; font-size: 0.7rem; margin-top: 10px;">Klik video untuk memutar</p>
+                    </div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box" style="background: rgba(245, 158, 11, 0.1); padding: 20px; margin-bottom: 15px;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Selamat Datang</h3>
+                        <p style="font-size: 0.95rem; line-height: 1.5;">Kepada <strong>Bapak/Ibu Orang Tua Siswa Kelas XI</strong><br>Program Keahlian Teknik Mesin<br>SMK Negeri 2 Tasikmalaya</p>
+                    </div>
+                    <div class="key-points">
+                        <h4 style="color: #f59e0b; margin-bottom: 12px; font-size: 0.9rem;">🎯 Visi Bersama</h4>
+                        <div class="key-point"><div class="point-icon">1</div><div class="point-text"><strong>Menyiapkan</strong> putra-putri kita untuk menghadapi dunia kerja.</div></div>
+                        <div class="key-point"><div class="point-icon">2</div><div class="point-text"><strong>Menjalin</strong> kerjasama dan membangun sinergi antara sekolah dan orang tua dalam menyelaraskan persiapan praktik kerja lapangan.</div></div>
+                        <div class="key-point"><div class="point-icon">3</div><div class="point-text"><strong>Membahas</strong> hasil survei kesiapan PKL</div></div>
+                    </div>
+                    <p style="margin-top: 20px; color: #94a3b8; font-size: 0.85rem; text-align: center;">Mari bersama-sama mendukung kesuksesan anak-anak kita 💪</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Rencana Karir -->
+        <div class="slide" data-notes="90,8% atau 128 siswa ingin langsung bekerja setelah lulus. Praktik Kerja Lapangan menjadi sangat krusial sebagai pintu gerbang pertama mereka.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 3 dari 10</div>
+                <h2 class="slide-title">Cita-Cita Setelah Lulus SMK</h2>
+                <p class="slide-subtitle">Rencana Masa Depan Putra-Putri Bapak/Ibu</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="chart-container"><canvas id="careerChart"></canvas></div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box">
+                        <h3>🎯 Temuan Utama</h3>
+                        <p>9 dari 10 siswa (<strong>90,8%</strong>) ingin <strong>langsung bekerja</strong> setelah lulus SMK!</p>
+                        <p style="margin-top: 8px; font-size: 0.95rem; color: #94a3b8; line-height: 1.5;">Berdasarkan survei, mayoritas mutlak siswa (128 anak) memilih untuk langsung bekerja setelah lulus. Hal ini menunjukkan orientasi siswa yang sangat praktis dan siap mandiri. Hanya sebagian kecil yang berencana melanjutkan kuliah atau berwirausaha.</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-value">128</div><div class="stat-label">Ingin Bekerja</div></div>
+                        <div class="stat-card"><div class="stat-value">9</div><div class="stat-label">Ingin Kuliah</div></div>
+                        <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Wirausaha</div></div>
+                        <div class="stat-card"><div class="stat-value">141</div><div class="stat-label">Total Siswa</div></div>
+                    </div>
+                    <div class="key-points">
+                        <div class="key-point"><div class="point-icon">✓</div><div class="point-text">Praktik Kerja Lapangan adalah investasi penting untuk modal kerja</div></div>
+                        <div class="key-point"><div class="point-icon">✓</div><div class="point-text">Menjembatani kesenjangan antara teori di sekolah dan praktik di dunia kerja, mempersiapkan siswa SMK menjadi Sumber Daya Manusia (SDM) yang unggul dan siap pakai. </div></div>
+                        <div class="key-point"><div class="point-icon">✓</div><div class="point-text">Perusahaan sering merekrut dari siswa PKL terbaik</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Wilayah PKL -->
+        <div class="slide" data-notes="42,5% memilih PKL di Kota Tasikmalaya. 57,5% memilih luar kota: Bandung 49 siswa, Cikarang 14 siswa, Karawang 8 siswa.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 4 dari 10</div>
+                <h2 class="slide-title">Kemana Anak Kita Akan PKL?</h2>
+                <p class="slide-subtitle">Sebaran Wilayah Penempatan Praktik Kerja Lapangan</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="chart-container"><canvas id="regionChart"></canvas></div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box">
+                        <h3>⚠️ Perhatian</h3>
+                        <p><strong>57,5% siswa akan PKL di LUAR KOTA</strong> — Perlu persiapan ekstra.</p>
+                        <p style="margin-top: 8px; font-size: 0.95rem; color: #94a3b8; line-height: 1.5;">Rencana wilayah PKL terbagi menjadi dua konsentrasi besar: Kota Tasikmalaya (60 siswa) dan Bandung (49 siswa). Sisanya berani mengambil tantangan ke kawasan industri besar seperti Cikarang dan Karawang. Ini menandakan kesiapan mental siswa untuk merantau dan mandiri demi pengalaman kerja yang lebih luas.</p>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><tr><th>Wilayah</th><th>Jumlah</th><th>Kategori</th></tr></thead>
+                            <tbody>
+                                <tr><td>Kota Tasikmalaya</td><td>60 (42.5%)</td><td><span class="badge badge-success">Lokal</span></td></tr>
+                                <tr><td>Bandung</td><td>49 (34.8%)</td><td><span class="badge badge-warning">Luar Kota</span></td></tr>
+                                <tr><td>Cikarang</td><td>14 (9.9%)</td><td><span class="badge badge-info">Industri</span></td></tr>
+                                <tr><td>Karawang</td><td>8 (5.7%)</td><td><span class="badge badge-info">Industri</span></td></tr>
+                                <tr><td>Jakarta/Bekasi/Lainnya</td><td>10 (7.1%)</td><td><span class="badge badge-purple">Variasi</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Kesiapan -->
+        <div class="slide" data-notes="84,4% siswa sudah memiliki rencana tempat PKL. 94,3% siap melanjutkan magang jika diminta perusahaan.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 5 dari 10</div>
+                <h2 class="slide-title">Apakah Anak Kita Sudah Siap?</h2>
+                <p class="slide-subtitle">Status Kesiapan Tempat PKL & Magang</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-value">84.4%</div><div class="stat-label">Sudah Punya Rencana</div></div>
+                        <div class="stat-card"><div class="stat-value">94.3%</div><div class="stat-label">Siap Lanjut Magang</div></div>
+                    </div>
+                    <div class="chart-container"><canvas id="readinessChart"></canvas></div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box">
+                        <h3>✅ Kabar Baik</h3>
+                        <p>Mayoritas siswa telah proaktif dan siap menghadapi dunia kerja!</p>
+                        <p style="margin-top: 8px; font-size: 0.95rem; color: #94a3b8; line-height: 1.5;">Sumber informasi utama siswa berasal dari kakak tingkat (alumni) dan inisiatif mencari secara mandiri. Hal ini menunjukkan jejaring alumni Teknik Mesin SMKN 2 Tasikmalaya sangat kuat dan bermanfaat bagi adik-adik kelasnya. Selain itu sebagai simulasi dalam mencari pekerjaan kedepannya.</p>
+                    </div>
+                    <div class="key-points">
+                        <h4 style="color: #f59e0b; margin-bottom: 10px; font-size: 0.85rem;">Sumber Informasi Praktik Kerja Lapangan:</h4>
+                        <div class="key-point"><div class="point-icon">🔍</div><div class="point-text"><strong>Mandiri:</strong> 45 siswa (31.9%)</div></div>
+                        <div class="key-point"><div class="point-icon">👥</div><div class="point-text"><strong>Kakak Tingkat:</strong> 38 siswa (27.0%)</div></div>
+                        <div class="key-point"><div class="point-icon">🏫</div><div class="point-text"><strong>Sekolah:</strong> 26 siswa (18.4%)</div></div>
+                        <div class="key-point"><div class="point-icon">👨‍👩‍👦</div><div class="point-text"><strong>Orang Tua:</strong> 24 siswa (17.0%)</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Kompetensi -->
+        <div class="slide" data-notes="73% atau 103 siswa menguasai Bubut Konvensional. Ini adalah fondasi yang sangat penting untuk industri manufaktur.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 6 dari 10</div>
+                <h2 class="slide-title">Keahlian Apa yang Dikuasai Anak Kita?</h2>
+                <p class="slide-subtitle">Kompetensi Teknik yang Diminati & Dikuasai Siswa</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="chart-container"><canvas id="competencyChart"></canvas></div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box">
+                        <h3>🔧 Keahlian Utama</h3>
+                        <p><strong>Bubut Konvensional</strong> dikuasai 73% siswa — Fondasi kuat untuk industri manufaktur!</p>
+                        <p style="margin-top: 8px; font-size: 0.95rem; color: #94a3b8; line-height: 1.5;">Siswa kita merasa paling percaya diri pada kompetensi Bubut Konvensional. Ini adalah keahlian dasar yang sangat fundamental di dunia permesinan. Penempatan PKL nantinya akan diusahakan selaras dengan minat keahlian ini agar mereka bisa langsung berkontribusi di perusahaan.</p>
+                    </div>
+                    <div class="info-cards">
+                        <div class="info-card"><div class="info-icon">🔩</div><div class="info-text"><h4>Bubut Konvensional</h4><p>Membuat benda silinder (as, baut, poros)</p></div></div>
+                        <div class="info-card"><div class="info-icon">⚙️</div><div class="info-text"><h4>Frais Konvensional</h4><p>Membuat permukaan rata dan alur</p></div></div>
+                        <div class="info-card"><div class="info-icon">🤖</div><div class="info-text"><h4>CNC (Bubut/Milling)</h4><p>Mesin canggih dikendalikan komputer</p></div></div>
+                        <div class="info-card"><div class="info-icon">🔥</div><div class="info-text"><h4>Fabrikasi/Las</h4><p>Menyambung dan membentuk logam</p></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Logistik -->
+        <div class="slide" data-notes="50,4% akan ngekost. Estimasi biaya: Rp 1,75-2,9 juta per bulan. Total 4 bulan: Rp 7-11,6 juta.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 7 dari 10</div>
+                <h2 class="slide-title">Persiapan Praktis untuk PKL</h2>
+                <p class="slide-subtitle">Rencana Tempat Tinggal & Transportasi Keberangkatan</p>
+            </div>
+            <div class="slide-content">
+                <div class="content-left">
+                    <div class="chart-container" style="margin-bottom: 12px;"><canvas id="accommodationChart"></canvas></div>
+                    <div class="chart-container"><canvas id="transportChart"></canvas></div>
+                </div>
+                <div class="content-right">
+                    <div class="highlight-box">
+                        <h3>💰 Estimasi Biaya (untuk yang Ngekost)</h3>
+                        <p><strong>Per Bulan:</strong> Rp 1.750.000 - Rp 2.900.000<br><strong>Total 4 Bulan:</strong> Rp 7.000.000 - Rp 11.600.000</p>
+                        <p style="margin-top: 8px; font-size: 0.95rem; color: #94a3b8; line-height: 1.5;">Untuk keberangkatan ke luar kota, banyak siswa yang memilih diantar oleh keluarga/orang tua atau menggunakan angkutan umum.</p>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead><tr><th>Komponen</th><th>Biaya/Bulan</th></tr></thead>
+                            <tbody>
+                                <tr><td>🏠 Biaya Kos</td><td>Rp 500rb - 1jt</td></tr>
+                                <tr><td>🍽️ Makan</td><td>Rp 900rb - 1,2jt</td></tr>
+                                <tr><td>🚌 Transport Lokal</td><td>Rp 200rb - 400rb</td></tr>
+                                <tr><td>📱 Pulsa/Internet</td><td>Rp 50rb - 100rb</td></tr>
+                                <tr><td>🧴 Kebutuhan Pribadi</td><td>Rp 100rb - 200rb</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Daftar Perusahaan dengan Tabs -->
+        <div class="slide" data-notes="Sekolah memiliki jaringan 75 perusahaan mitra. Klik tab untuk melihat daftar per wilayah.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 8 dari 10</div>
+                <h2 class="slide-title">Daftar Lengkap 75 Perusahaan Mitra PKL</h2>
+                <p class="slide-subtitle">Klik tab wilayah untuk melihat daftar perusahaan</p>
+            </div>
+            <div class="slide-content" style="flex-direction: column; gap: 10px;">
+                <!-- Region Tabs -->
+                <div class="region-tabs" id="companyTabs" style="justify-content: center;">
+                    <button class="region-tab active" onclick="showCompanyTab('bandung')">🟡 Bandung (27)</button>
+                    <button class="region-tab" onclick="showCompanyTab('bekasi')">🔵 Bekasi (23)</button>
+                    <button class="region-tab" onclick="showCompanyTab('tasik')">🟢 Tasikmalaya (20)</button>
+                    <button class="region-tab" onclick="showCompanyTab('ciamis')">🟣 Ciamis (6)</button>
+                    <button class="region-tab" onclick="showCompanyTab('karawang')">🟠 Karawang (3)</button>
+                </div>
+                <!-- Company Tables -->
+                <div class="content-full" style="overflow: auto;">
+                    <!-- BANDUNG Table -->
+                    <div id="tab-bandung" class="company-tab-content">
+                        <div class="table-container" style="height: 100%;">
+                            <table class="data-table" style="font-size: 0.7rem;">
+                                <thead><tr><th>No</th><th style="width: 35%;">Nama Perusahaan</th><th>Alamat</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>UPTD INDUSTRI LOGAM</td><td>Jl. Soekarno Hatta Km 12,5</td></tr>
+                                    <tr><td>2</td><td>SINAR KARYA TUNGGAL</td><td>Jl. Anyelir 1 No. 16 Cipadung Kidul, Panyileukan</td></tr>
+                                    <tr><td>3</td><td>PT. TRINDO PRATAMA</td><td>Jl. Sekejati no. 40 Sukapura, Kiaracondong</td></tr>
+                                    <tr><td>4</td><td>PT. DIYORIFA CIPTA PERSADAS</td><td>Randu sari timur blok lepuji 3F Antapani Kidul</td></tr>
+                                    <tr><td>5</td><td>PT. PINDAD</td><td>Jl. Terusan Gatot Sobroto no 517, Kiaracondong</td></tr>
+                                    <tr><td>6</td><td>POLITEKNIK MANUFAKTUR BANDUNG</td><td>Jl. Kanayakan No.21, Dago, Coblong</td></tr>
+                                    <tr><td>7</td><td>CV. RMT MANUFAKTUR</td><td>Komplek LIK B-25, Mekar Mulya, Panyileukan</td></tr>
+                                    <tr><td>8</td><td>CV. MEKAR RAHAYU ABADI</td><td>Jl. Jend Amir Machmud no 111/115, Cibeureum-Cimahi</td></tr>
+                                    <tr><td>9</td><td>PT. KARYA MANDIRI MANUFACTURE</td><td>Kaw. LIK Gede Bage unit B14 Mekarmulya</td></tr>
+                                    <tr><td>10</td><td>PT. MULTI INSTRUMENTASI</td><td>Jl. Cinambo No.4 Pakemitan, Ujung Berung</td></tr>
+                                    <tr><td>11</td><td>CV. JAYA MANDIRI TEKNIK</td><td>Kp. Babakan GBI, Jln. Raya Buahbatu, Bojongsoang</td></tr>
+                                    <tr><td>12</td><td>CV. MANDIRI JAYA</td><td>Jln. Cisaranten Wetan 1 no. 143, Cinambo</td></tr>
+                                    <tr><td>13</td><td>CV. MODULISA TEKNIK</td><td>Jln. Cipamokolan no. 2 Blok AA, Rancasari</td></tr>
+                                    <tr><td>14</td><td>CV. SINAR KARYA NUNGGAL</td><td>Jln. Anyelir 2 No. 18 Cipadung Kidul, Panyileukan</td></tr>
+                                    <tr><td>15</td><td>PT. DWI TUNGGAL METALINDO</td><td>Komp. Villa Cluster Margaluyu No. B-6, Buah batu</td></tr>
+                                    <tr><td>16</td><td>PT. NIKATSU ELECTRIC WORKS</td><td>Jl. Cimuncang No.70, Pasirlayung, Cibeunying Kidul</td></tr>
+                                    <tr><td>17</td><td>PT. PUDAK SCIENTIFIC</td><td>Jl. Mekar Raya Kav 12 Panyileukan</td></tr>
+                                    <tr><td>18</td><td>BONMA TEKNIK</td><td>Jl. Babakan No.31 Magasetra Majalaya Kab. Bandung</td></tr>
+                                    <tr><td>19</td><td>PT. BISMA PUTRA PERSADA</td><td>Jl. Terusan Nanjung Margasari Kab Bandung</td></tr>
+                                    <tr><td>20</td><td>PT. DIRGANTARA INDONESIA</td><td>Jl. Pajajaran Bandung</td></tr>
+                                    <tr><td>21</td><td>PT. DWITAMA MADYA PERSADA</td><td>Kaw. Industri de Prima, Jl. Raya Sopan No 07, Bojongsoang</td></tr>
+                                    <tr><td>22</td><td>BBPPMPV Bidang Teknik Mesin</td><td>Jl. Pesantren No. KM, Cibabat, Cimahi</td></tr>
+                                    <tr><td>23</td><td>PT. NEO PRIMA PUTRA</td><td>Katapang Bandung</td></tr>
+                                    <tr><td>24</td><td>PT. NUSA JAYA</td><td>Kawasan Industri Primatera Sapan Gedebage</td></tr>
+                                    <tr><td>25</td><td>PT. PARAMUDA</td><td>Kawasan Industri Primatera Sapan Gedebage</td></tr>
+                                    <tr><td>26</td><td>PT. DWITAMA</td><td>Kawasan Industri Primatera Sapan Gedebage</td></tr>
+                                    <tr><td>27</td><td>PT. TRIMETRIK</td><td>Kawasan Industri Primatera Sapan Gedebage</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- BEKASI Table -->
+                    <div id="tab-bekasi" class="company-tab-content" style="display: none;">
+                        <div class="table-container" style="height: 100%;">
+                            <table class="data-table" style="font-size: 0.7rem;">
+                                <thead><tr><th>No</th><th style="width: 35%;">Nama Perusahaan</th><th>Alamat</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>PT. SHINKOBE ENGINEERING</td><td>Jl. Cikarang-Cibarusah No. 100 Sukaresmi, Cikarang</td></tr>
+                                    <tr><td>2</td><td>PT. NUSA TOYOTETSU CORP</td><td>MM 2100 Cikarang</td></tr>
+                                    <tr><td>3</td><td>PT. DANO JAYA INDONESIA</td><td>Jl. Bantar Gebang Setu No 8, Mustika Jaya</td></tr>
+                                    <tr><td>4</td><td>PT. HINOKA ALSINDO TEKNIK</td><td>Jl. Raya Siliwangi no 133</td></tr>
+                                    <tr><td>5</td><td>PT. DERISTAMA TEKNINDO</td><td>Jababeka</td></tr>
+                                    <tr><td>6</td><td>PT. KARTIKA SIGMA INDONESIA</td><td>Kawasan Industri Pulogadung Blok D No. 4, Jakarta Timur</td></tr>
+                                    <tr><td>7</td><td>PT. RYOSHIN UNGGUL INDONESIA</td><td>Jalan Inti 3 Blok C11 No. 19, Cikarang Selatan</td></tr>
+                                    <tr><td>8</td><td>PT. SEIDOTECH MANNA INDONESIA</td><td>Ruko Taman Galaxy Raya blok B no 289 B, Jaka Setia</td></tr>
+                                    <tr><td>9</td><td>PT. PRIMERA MEKA MIX</td><td>Dizhub Tambun, Jl. Hasanudin KM 41 no 2 Block E</td></tr>
+                                    <tr><td>10</td><td>PT. TEMBAGA MULIA SEMANAR</td><td>Jl. Daan Mogot KM 16, Semanan, Jakarta Barat</td></tr>
+                                    <tr><td>11</td><td>PT. DINAMIK ERA MASAGI</td><td>Jl. Tegal Danas No 6 Jaya Mukti Cikarang</td></tr>
+                                    <tr><td>12</td><td>PT. GLOBAL MEGA INDONESIA</td><td>Jl. Jababeka III blok C 17 no 17, Cikarang</td></tr>
+                                    <tr><td>13</td><td>PT. REIKEN QUALITY TOOLS</td><td>Jl. Raya Serang-Cibarusah no 158 A</td></tr>
+                                    <tr><td>14</td><td>PT. WAHANA DUTA JAYA RUCIKA</td><td>Jl. Raya Imam Bonjol KM 26 Sukadanau, Cikarang</td></tr>
+                                    <tr><td>15</td><td>RIZKI CIPTA MANDIRI</td><td>Jl. Kavling Tandang Mandiri Blok 4 no 63, Setu</td></tr>
+                                    <tr><td>16</td><td>BENGKEL PUTRA JAYA DRILINDO</td><td>Jln. Alhusna No. 12 Jati Kramat</td></tr>
+                                    <tr><td>17</td><td>PT. KREATIF MANDIRI TEKNOLOGI</td><td>Jl. Raya Cicau Kawasan CCIP Blok K3 No. 6, Cikarang</td></tr>
+                                    <tr><td>18</td><td>PT. MULTI JAYA MESINDOTAMA</td><td>Jl. Tegal Danas No.11, Hegarmanah, Cikarang Tim.</td></tr>
+                                    <tr><td>19</td><td>PT. PATRIOT SELARAS TEKNIK</td><td>Jln. Kedaung, Cimuning, Mustika Jaya</td></tr>
+                                    <tr><td>20</td><td>PT. TORAMA ASAHI MANDIRI</td><td>Kawasan Industri Jababeka II Blok Gg No 9 G</td></tr>
+                                    <tr><td>21</td><td>PT. BUKAKA</td><td>Jl. Raya Narogong KM.23 No.18, Cileungsi, Bogor</td></tr>
+                                    <tr><td>22</td><td>PT. DINAMIK ERA MASAGI (2)</td><td>Jl. Raya Tegal Danas No 6, Cikarang Pusat</td></tr>
+                                    <tr><td>23</td><td>PT. DINAMIK ERA MASAGI (Cab)</td><td>Jl. Raya Tegal Danas, Jaya Mukti</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- TASIKMALAYA Table -->
+                    <div id="tab-tasik" class="company-tab-content" style="display: none;">
+                        <div class="table-container" style="height: 100%;">
+                            <table class="data-table" style="font-size: 0.7rem;">
+                                <thead><tr><th>No</th><th style="width: 35%;">Nama Perusahaan</th><th>Alamat</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>BENGKEL BUBUT DEDARI JAYA</td><td>Jl. Raya Mangin, Linggajaya, Mangkubumi</td></tr>
+                                    <tr><td>2</td><td>BENGKEL 3 SAUDARA</td><td>Jl. Sambong Jaya No. 14, Sambongpari, Mangkubumi</td></tr>
+                                    <tr><td>3</td><td>BENGKEL BERKAH TEKNIK</td><td>Jl. Setiawargi Kota Tasikmalaya</td></tr>
+                                    <tr><td>4</td><td>BENGKEL BUBUT ACC</td><td>Jln. SL. Tobing No. 39 Tugu Jaya, Cihideung</td></tr>
+                                    <tr><td>5</td><td>BENGKEL BUBUT SYAM FAMILY</td><td>Jln. Ir. H. Djuanda (Depan Gudang Garam)</td></tr>
+                                    <tr><td>6</td><td>BENGKEL DUNAN COSTUM</td><td>Jln. Gubernur Swaka, Sambong Jaya</td></tr>
+                                    <tr><td>7</td><td>BENGKEL FARID</td><td>Jl. Noenoeng Tisnasaputra, Kahuripan, Tawang</td></tr>
+                                    <tr><td>8</td><td>BENGKEL LAS BERKAH MANDIRI</td><td>Jl. Rasamala No.18, Tawangsari, Tawang</td></tr>
+                                    <tr><td>9</td><td>BENGKEL LAS BUBUT EBLEH</td><td>Jl. Dr. Moh. Hatta, Sukamanah, Cipedes</td></tr>
+                                    <tr><td>10</td><td>BENGKEL LAS BUBUT TOSIN</td><td>Jln. Sambong Jaya (Dekat Gardu PLN)</td></tr>
+                                    <tr><td>11</td><td>BENGKEL LAS JAYA BAJA</td><td>Jln. Sambong Jaya (Dekat Gardu PLN)</td></tr>
+                                    <tr><td>12</td><td>BENGKEL LAS JEJEN</td><td>Jln. Gubernur Suwaka By Pass Sambong Asam</td></tr>
+                                    <tr><td>13</td><td>BENGKEL LAS SAKURA JAYA</td><td>Jl. Siliwangi No.90, Kahuripan, Tawang</td></tr>
+                                    <tr><td>14</td><td>BENGKEL LAS SULTAN WAWA</td><td>Jln. Ir. H. Djuanda By Pass, Perempatan Bojonglimus</td></tr>
+                                    <tr><td>15</td><td>CV. MULIA ABADI</td><td>Jln. Sukanagara No. 8, Kahuripan, Tawang</td></tr>
+                                    <tr><td>16</td><td>SENTRA LAS</td><td>Jln. Ir. H. Juanda Tasikmalaya</td></tr>
+                                    <tr><td>17</td><td>BENGKEL BUBUT AAN</td><td>Jl. Raya Rajapolah No 334, Mekarwangi, Kab. Tasik</td></tr>
+                                    <tr><td>18</td><td>PT. PERTAMINA GEOTHERMAL ENERGI</td><td>Kadipaten, Kab. Tasikmalaya</td></tr>
+                                    <tr><td>19</td><td>AANG AIDA</td><td>Jl. Raya Rajapolah, Kab. Tasikmalaya</td></tr>
+                                    <tr><td>20</td><td>BENGKEL FARID</td><td>Jl. Noenoeng Tisnasaputra, Kahuripan</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- CIAMIS Table -->
+                    <div id="tab-ciamis" class="company-tab-content" style="display: none;">
+                        <div class="table-container" style="height: 100%;">
+                            <table class="data-table" style="font-size: 0.7rem;">
+                                <thead><tr><th>No</th><th style="width: 35%;">Nama Perusahaan</th><th>Alamat</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>HARAPAN JAYA</td><td>JL. Baru Sindangkasih, Cikoneng, Ciamis</td></tr>
+                                    <tr><td>2</td><td>B. LAS & BUBUT EGI JAPRA</td><td>Jl. Tubagus Abdullah, Sindangkasih, Purbaru</td></tr>
+                                    <tr><td>3</td><td>LOST CONTROL</td><td>Jl. Pamayang, Cijeungjing</td></tr>
+                                    <tr><td>4</td><td>CV MITRA TEKNIK</td><td>Psr Sindang Kasih, Cikoneng, Ciamis</td></tr>
+                                    <tr><td>5</td><td>HARAPAN JAYA (Cab)</td><td>JL. Baru Sindangkasih, Cikoneng, Ciamis</td></tr>
+                                    <tr><td>6</td><td>LATANZA JAYA TECH</td><td>Jl. Yos Sudarso No.87, Ciamis</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- KARAWANG Table -->
+                    <div id="tab-karawang" class="company-tab-content" style="display: none;">
+                        <div class="table-container" style="height: 100%;">
+                            <table class="data-table" style="font-size: 0.7rem;">
+                                <thead><tr><th>No</th><th style="width: 35%;">Nama Perusahaan</th><th>Alamat</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1</td><td>PT. RODA PRIMA LANCAR</td><td>Jln. Inspeksi Tarum Barat, Parungmulya, Ciampel</td></tr>
+                                    <tr><td>2</td><td>PT. JAYA INDUKSI ELEKTRIK</td><td>Pinayungan, Teluk Jambe, Karawang</td></tr>
+                                    <tr><td>3</td><td>PT. KIYOKUNI TECHNOLOGIES</td><td>Kawasan Industri Surya Cipta, Karawang</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Peta Interaktif -->
+        <div class="slide" data-notes="Klik pada card perusahaan untuk melihat lokasi di peta Google Maps. Tersebar di Bandung, Cikarang, Tasikmalaya, dan wilayah lainnya.">
+            <div class="slide-header">
+                <div class="slide-number">SLIDE 9 dari 10</div>
+                <h2 class="slide-title">📍 Peta Lokasi Perusahaan Mitra</h2>
+                <p class="slide-subtitle">Klik pada card perusahaan untuk melihat lokasi di peta</p>
+            </div>
+            <div class="slide-content">
+                <div class="map-section">
+                    <div class="company-list-panel">
+                        <div class="region-tabs" id="mapTabs">
+                            <button class="region-tab active" onclick="filterCompanies('all')">Semua (75)</button>
+                            <button class="region-tab" onclick="filterCompanies('Bandung')">🟡 Bandung (25)</button>
+                            <button class="region-tab" onclick="filterCompanies('Cimahi')">🟡 Cimahi (2)</button>
+                            <button class="region-tab" onclick="filterCompanies('Bekasi')">🔵 Bekasi (20)</button>
+                            <button class="region-tab" onclick="filterCompanies('Tasikmalaya')">🟢 Tasikmalaya (19)</button>
+                            <button class="region-tab" onclick="filterCompanies('Ciamis')">🟣 Ciamis (5)</button>
+                            <button class="region-tab" onclick="filterCompanies('Karawang')">🟠 Karawang (3)</button>
+                        </div>
+                        <div class="company-cards" id="companyCards"></div>
+                    </div>
+                    <div class="map-panel">
+                        <div class="map-container">
+                            <div id="leafletMap" style="width: 100%; height: 100%; border-radius: 12px;"></div>
+                        </div>
+                        <div class="map-legend">
+                            <div class="legend-item"><div class="legend-dot" style="background: #f59e0b;"></div>Bandung/Cimahi (27)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #3b82f6;"></div>Bekasi (20)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #10b981;"></div>Tasikmalaya (19)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #ec4899;"></div>Ciamis (5)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #8b5cf6;"></div>Karawang (3)</div>
+                            <div class="legend-item"><div class="legend-dot" style="background: #64748b;"></div>Jakarta/Bogor (3)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Penutup -->
+        <div class="slide slide-closing" data-notes="Kesimpulan: 90,8% siap bekerja, 84,4% punya rencana PKL, 94,3% siap lanjut magang. Harapan: dukung pilihan anak, siapkan dana, jaga komunikasi. Terima kasih.">
+            <div style="max-width: 750px;">
+                <div class="logo-row" style="margin-bottom: 20px;">
+                    <img src="logo_tutwuri.webp" alt="Tut Wuri Handayani" class="logo-img" style="height: 50px;">
+                    <img src="logo_smkn2.webp" alt="SMKN 2 Tasikmalaya" class="logo-img" style="height: 65px;">
+                    <img src="logo_teknik_mesin.webp" alt="Teknik Mesin" class="logo-img" style="height: 65px;">
+                </div>
+                <h1 class="closing-title">Bersama Meraih Masa Depan Cerah</h1>
+                <p class="closing-text">Mari kita dukung putra-putri kita untuk berusaha maksimal dalam persiapan dan proses Praktik Kerja Lapangan. Dengan kerja sama yang baik, Insya Allah mereka akan berhasil!</p>
+                <div class="closing-stats">
+                    <div class="closing-stat"><div class="closing-stat-value">90.8%</div><div class="closing-stat-label">Siap Bekerja</div></div>
+                    <div class="closing-stat"><div class="closing-stat-value">84.4%</div><div class="closing-stat-label">Punya Rencana Pra PKL</div></div>
+                    <div class="closing-stat"><div class="closing-stat-value">94.3%</div><div class="closing-stat-label">Siap Lanjut Magang</div></div>
+                    <div class="closing-stat"><div class="closing-stat-value">75</div><div class="closing-stat-label">Perusahaan</div></div>
+                </div>
+                <div class="key-points" style="text-align: left; margin-bottom: 20px;">
+                    <h4 style="color: #f59e0b; margin-bottom: 10px; text-align: center;">🤝 Harapan Sekolah</h4>
+                    <div class="key-point"><div class="point-icon">1</div><div class="point-text">Dukung pilihan putra-putri tentang wilayah PKL.</div></div>
+                    <div class="key-point"><div class="point-icon">2</div><div class="point-text">Dukungan orang tua adalah kunci utama kelancaran PKL, baik secara mental maupun logistik.</div></div>
+                    <div class="key-point"><div class="point-icon">3</div><div class="point-text">Jaga komunikasi, sikap dan nama baik keluarga serta sekolah selama PKL berlangsung</div></div>
+                </div>
+                <p class="thank-you">🙏 Terima Kasih atas Perhatian Bapak/Ibu</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="speaker-notes" id="speakerNotes"><h4>📝 Speaker Notes</h4><p id="notesContent"></p></div>
+    
+    <!-- Fullscreen Prompt Modal -->
+    <div id="fullscreenPrompt" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(10px);">
+        <div style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); padding: 40px; border-radius: 20px; text-align: center; max-width: 400px; border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+            <div style="font-size: 4rem; margin-bottom: 20px;">📺</div>
+            <h2 style="color: #f59e0b; margin-bottom: 15px; font-size: 1.5rem;">Mode Presentasi</h2>
+            <p style="color: #94a3b8; margin-bottom: 25px; font-size: 0.95rem;">Untuk pengalaman terbaik, aktifkan mode fullscreen</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="enterFullscreen()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #1e293b; border: none; padding: 12px 25px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">🖥️ Fullscreen</button>
+                <button onclick="closePrompt()" style="background: rgba(100, 116, 139, 0.3); color: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.3); padding: 12px 25px; border-radius: 10px; font-size: 1rem; cursor: pointer; transition: all 0.3s;">Lewati</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="toggleFullscreen()" title="Fullscreen" style="font-size: 0.9rem;">⛶</button>
+        <button class="nav-btn" onclick="prevSlide()">←</button>
+        <div class="slide-indicator" id="slideIndicator"></div>
+        <button class="nav-btn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        // Register Chart.js datalabels plugin
+        Chart.register(ChartDataLabels);
+
+        // Fullscreen functions
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+            closePrompt();
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                enterFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+        
+        function closePrompt() {
+            document.getElementById('fullscreenPrompt').style.display = 'none';
+        }
+        
+        // Handle 'F' key for fullscreen toggle
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullscreen();
+            }
+        });
+
+        // Company Data - Complete 75 companies from database (duplicates removed)
+        const companies = [
+            // BANDUNG & CIMAHI (26) - CV. MEKAR RAHAYU ABADI moved to Cimahi
+            {name: "UPTD INDUSTRI LOGAM", address: "Jl. Soekarno Hatta Km 12,5, Mekar Mulya, Panyileukan", city: "Bandung", color: "#f59e0b", lat: -6.935, lng: 107.699},
+            {name: "SINAR KARYA TUNGGAL", address: "Jl. Anyelir 1 No. 16 Cipadung Kidul Panyileukan", city: "Bandung", color: "#f59e0b", lat: -6.936, lng: 107.698},
+            {name: "PT. TRINDO PRATAMA", address: "Jl. Sekejati no. 40 Sukapura, Kiaracondong", city: "Bandung", color: "#f59e0b", lat: -6.932, lng: 107.647},
+            {name: "PT. DIYORIFA CIPTA PERSADAS", address: "Randu sari timur blok lepuji 3F Antapani Kidul", city: "Bandung", color: "#f59e0b", lat: -6.914, lng: 107.658},
+            {name: "PT. PINDAD", address: "Jl. Gatot Subroto No. 517, Sukapura, Kiaracondong", city: "Bandung", color: "#f59e0b", lat: -6.934, lng: 107.649},
+            {name: "POLITEKNIK MANUFAKTUR BANDUNG", address: "Jl. Kanayakan No.21, Dago, Kec. Coblong", city: "Bandung", color: "#f59e0b", lat: -6.877, lng: 107.621},
+            {name: "CV. RMT MANUFAKTUR", address: "Komplek LIK B-25, Mekar Mulya, Panyileukan", city: "Bandung", color: "#f59e0b", lat: -6.937, lng: 107.697},
+            {name: "PT. KARYA MANDIRI MANUFACTURE", address: "Kaw.LIK Gede bage unit B14 Mekarmulya", city: "Bandung", color: "#f59e0b", lat: -6.945, lng: 107.695},
+            {name: "PT. MULTI INSTRUMENTASI", address: "Jl.Cinambo No.4 Pakemitan. Kec Ujung berung", city: "Bandung", color: "#f59e0b", lat: -6.908, lng: 107.692},
+            {name: "CV. JAYA MANDIRI TEKNIK", address: "Kp. Babakan GBI, Jln. Raya Buahbatu, Kec. Bojongsoang", city: "Bandung", color: "#f59e0b", lat: -6.969, lng: 107.636},
+            {name: "CV. MANDIRI JAYA", address: "Jln. Cisaranten Wetan 1 no. 143 Cinambo", city: "Bandung", color: "#f59e0b", lat: -6.910, lng: 107.688},
+            {name: "CV. MODULISA TEKNIK", address: "Jln. Cipamokolan no. 2 Blok AA, Kec. Rancasari", city: "Bandung", color: "#f59e0b", lat: -6.948, lng: 107.671},
+            {name: "CV. SINAR KARYA NUNGGAL", address: "Jln. Anyelir 2 No. 18 Cipadung Kidul Panyileukan", city: "Bandung", color: "#f59e0b", lat: -6.935, lng: 107.699},
+            {name: "PT. DWI TUNGGAL METALINDO", address: "Komp. Villa Cluster Margaluyu No. B-6 Buah batu", city: "Bandung", color: "#f59e0b", lat: -6.959, lng: 107.649},
+            {name: "PT. NIKATSU ELECTRIC WORKS", address: "Jl. Cimuncang No.70, Pasirlayung, Cibeunying Kidul", city: "Bandung", color: "#f59e0b", lat: -6.899, lng: 107.647},
+            {name: "PT. PUDAK SCIENTIFIC", address: "Jl. Mekar Raya Kav 12 Panyileukan", city: "Bandung", color: "#f59e0b", lat: -6.933, lng: 107.696},
+            {name: "BONMA TEKNIK", address: "Jl.Babakan No.31 Megasetra Majalaya Kab. Bandung", city: "Bandung", color: "#f59e0b", lat: -7.048, lng: 107.759},
+            {name: "PT. BISMA PUTRA PERSADA", address: "Jl.Terusan Nanjung Margassih Kab Bandung", city: "Bandung", color: "#f59e0b", lat: -6.936, lng: 107.538},
+            {name: "PT. DIRGANTARA INDONESIA", address: "Jl. Pajajaran No.154 Bandung", city: "Bandung", color: "#f59e0b", lat: -6.905, lng: 107.583},
+            {name: "PT. DWITAMA MADYA PERSADA", address: "Kaw.Industri de prima.Jl. Raya Sopan No 07 Bojongsoang", city: "Bandung", color: "#f59e0b", lat: -6.975, lng: 107.648},
+            {name: "PT. NEO PRIMA PUTRA", address: "Katapang Bandung", city: "Bandung", color: "#f59e0b", lat: -6.988, lng: 107.566},
+            {name: "PT. NUSA JAYA", address: "Kawasan Industri Primatera sapan gedebage", city: "Bandung", color: "#f59e0b", lat: -6.955, lng: 107.688},
+            {name: "PT. PARAMUDA", address: "Kawasan Industri Primatera sapan gedebage", city: "Bandung", color: "#f59e0b", lat: -6.956, lng: 107.687},
+            {name: "PT. DWITAMA", address: "Kawasan Industri Primatera sapan gedebage", city: "Bandung", color: "#f59e0b", lat: -6.957, lng: 107.689},
+            {name: "PT. TRIMETRIK", address: "Kawasan Industri Primatera sapan gedebage", city: "Bandung", color: "#f59e0b", lat: -6.954, lng: 107.690},
+            // CIMAHI (2) - Fixed from PDF
+            {name: "CV. MEKAR RAHAYU ABADI", address: "Jl. Jend Amir Machmud no 111/115 Cibeureum", city: "Cimahi", color: "#f59e0b", lat: -6.883, lng: 107.541},
+            {name: "BBPPMPV Bidang Teknik Mesin", address: "Jl. Pesantren KM 2, Cibabat, Cimahi Utara", city: "Cimahi", color: "#f59e0b", lat: -6.869, lng: 107.549},
+            // BEKASI & CIKARANG (20) - Removed duplicate PT. DINAMIK ERA MASAGI
+            {name: "PT. SHINKOBE ENGINEERING", address: "Jl. Raya Cikarang-Cibarusah No. 100 Sukaresmi Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.324, lng: 107.185},
+            {name: "PT. NUSA TOYOTETSU CORP", address: "MM 2100 Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.301, lng: 107.112},
+            {name: "PT. DANO JAYA INDONESIA", address: "Jl.Bantar Gebang Setu No 8 Mustika Jaya", city: "Bekasi", color: "#3b82f6", lat: -6.319, lng: 107.005},
+            {name: "PT. HINOKA ALSINDO TEKNI", address: "Jl.Raya Siliwangi no 133 Bekasi", city: "Bekasi", color: "#3b82f6", lat: -6.238, lng: 106.999},
+            {name: "PT. DERISTAMA TEKNINDO", address: "Kawasan Industri Jababeka Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.290, lng: 107.170},
+            {name: "PT. RYOSHIN UNGGUL INDONESIA", address: "Jalan Inti 3 Blok C11 No. 19, Cikarang Selatan", city: "Bekasi", color: "#3b82f6", lat: -6.315, lng: 107.152},
+            {name: "PT. SEIDOTECH MANNA INDONESIA", address: "Ruko Taman Galaxy Raya blok B.no 289 B Jaka setia", city: "Bekasi", color: "#3b82f6", lat: -6.273, lng: 106.976},
+            {name: "PT. PRIMERA MEKA MIX", address: "Dizhub Tambun. Jl.Hasanudin KM 41 no 2 Block E", city: "Bekasi", color: "#3b82f6", lat: -6.249, lng: 107.059},
+            {name: "PT. DINAMIK ERA MASAGI", address: "Jl.Tegal Danas No 6 Jaya Mukti Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.305, lng: 107.175},
+            {name: "PT. GLOBAL MEGA INDONESIA", address: "Jl.Jababeka III blok C 17 no 17 Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.289, lng: 107.168},
+            {name: "PT. REIKEN QUALITY TOOLS", address: "Jl.Raya Serang -Cibarusah no 158 A", city: "Bekasi", color: "#3b82f6", lat: -6.335, lng: 107.188},
+            {name: "PT. WAHANA DUTA JAYA RUCIKA", address: "Jl.Raya Imam Bonjol KM 26 Sukadanau Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.278, lng: 107.145},
+            {name: "RIZKI CIPTA MANDIRI", address: "Jl.Kavling Tandang Mandiri Blok 4 no 63 Setu", city: "Bekasi", color: "#3b82f6", lat: -6.328, lng: 106.993},
+            {name: "BENGKEL PUTRA JAYA DRILINDO", address: "Jln. Alhusna No. 12 Jati Kramat", city: "Bekasi", color: "#3b82f6", lat: -6.293, lng: 106.924},
+            {name: "PT. KREATIF MANDIRI TEKNOLOGI", address: "Jl. Raya Cicau Kawasan Ccip Blok K3, No. 6 Cikarang", city: "Bekasi", color: "#3b82f6", lat: -6.308, lng: 107.163},
+            {name: "PT. MULTI JAYA MESINDOTAMA", address: "Jl. Tegal Danas No.11, Hegarmanah, Cikarang Tim.", city: "Bekasi", color: "#3b82f6", lat: -6.304, lng: 107.178},
+            {name: "PT. PATRIOT SELARAS TEKNIK", address: "Jln. Kedaung, Cimuning, Kec. Mustika Jaya", city: "Bekasi", color: "#3b82f6", lat: -6.324, lng: 107.012},
+            {name: "PT. TORAMA ASAHI MANDIRI", address: "Kawasan Industri Jababeka II Blok Gg No 9 G", city: "Bekasi", color: "#3b82f6", lat: -6.287, lng: 107.171},
+            // JAKARTA (2)
+            {name: "PT. KARTIKA SIGMA INDONESIA", address: "Kawasan Industri Pulogadung Blok D No. 4, Jakarta Timur", city: "Jakarta", color: "#64748b", lat: -6.183, lng: 106.899},
+            {name: "PT. TEMBAGA MULIA SEMANAR", address: "Jl.Daan Mogot KM 16 Kp.Semanan Kec. Kalideres Jakarta Barat", city: "Jakarta", color: "#64748b", lat: -6.143, lng: 106.710},
+            // BOGOR (1)
+            {name: "PT. BUKAKA", address: "Jl. Raya Narogong KM.23 No.18, Cileungsi, Bogor", city: "Bogor", color: "#64748b", lat: -6.404, lng: 106.960},
+            // KARAWANG (3)
+            {name: "PT. RODA PRIMA LANCAR", address: "Jln. Inspeksi Tarum Barat Ds. Parungmulya Kec. Ciampel", city: "Karawang", color: "#8b5cf6", lat: -6.378, lng: 107.378},
+            {name: "PT. JAYA INDUKSI ELEKTRIK", address: "Pinayungan Teluk Jambe, Karawang", city: "Karawang", color: "#8b5cf6", lat: -6.361, lng: 107.389},
+            {name: "PT. KIYOKUNI TECHNOLOGIES", address: "Kawasan Industri Surya Cipta, Karawang", city: "Karawang", color: "#8b5cf6", lat: -6.378, lng: 107.383},
+            // TASIKMALAYA (19) - Removed duplicate entry
+            {name: "BENGKEL BUBUT DEDARI JAYA", address: "Jl. Raya Mangin, Linggajaya, Kec. Mangkubumi", city: "Tasikmalaya", color: "#10b981", lat: -7.355, lng: 108.183},
+            {name: "BENGKEL 3 SAUDARA", address: "Jl. Sambong Jaya No. 14 Kec. Mangkubumi", city: "Tasikmalaya", color: "#10b981", lat: -7.348, lng: 108.188},
+            {name: "BENGKEL BERKAH TEKNIK", address: "Jl. Setiawargi Kota Tasikmalaya", city: "Tasikmalaya", color: "#10b981", lat: -7.333, lng: 108.218},
+            {name: "BENGKEL BUBUT ACC", address: "JLn. SL. Tobing No. 39 Tugu Jaya Cihideung", city: "Tasikmalaya", color: "#10b981", lat: -7.323, lng: 108.224},
+            {name: "BENGKEL BUBUT SYAM FAMILY", address: "Jln. Ir. H. Djuanda (Depan Gudang Garam)", city: "Tasikmalaya", color: "#10b981", lat: -7.327, lng: 108.212},
+            {name: "BENGKEL DUNAN COSTUM", address: "Jln. Gubernur Swaka Sambong jaya", city: "Tasikmalaya", color: "#10b981", lat: -7.345, lng: 108.190},
+            {name: "BENGKEL FARID", address: "Jl. Noenoeng Tisnasaputra, Kahuripan, Kec. Tawang", city: "Tasikmalaya", color: "#10b981", lat: -7.321, lng: 108.220},
+            {name: "BENGKEL LAS BERKAH MANDIRI", address: "Jl. Rasamala No.18, Tawangsari, Kec. Tawang", city: "Tasikmalaya", color: "#10b981", lat: -7.319, lng: 108.219},
+            {name: "BENGKEL LAS BUBUT EBLEH", address: "Jl. Dr. Moh. Hatta, Sukamanah, Kec. Cipedes", city: "Tasikmalaya", color: "#10b981", lat: -7.315, lng: 108.230},
+            {name: "BENGKEL LAS BUBUT TOSIN", address: "Jln. Sambong Jaya (Dekat Gardu PLN)", city: "Tasikmalaya", color: "#10b981", lat: -7.347, lng: 108.189},
+            {name: "BENGKEL LAS JAYA BAJA", address: "Jln. Sambong Jaya (Dekat Gardu PLN)", city: "Tasikmalaya", color: "#10b981", lat: -7.346, lng: 108.188},
+            {name: "BENGKEL LAS JEJEN", address: "Jln. Gubernur Suwaka By Pass Sambong asam", city: "Tasikmalaya", color: "#10b981", lat: -7.344, lng: 108.192},
+            {name: "BENGKEL LAS SAKURA JAYA", address: "Jl. Siliwangi No.90, Kahuripan, Kec. Tawang", city: "Tasikmalaya", color: "#10b981", lat: -7.320, lng: 108.221},
+            {name: "BENGKEL LAS SULTAN WAWA", address: "Jln. Ir. H. Djuanda (By Pass) Perempatan Bojonglimus", city: "Tasikmalaya", color: "#10b981", lat: -7.330, lng: 108.205},
+            {name: "CV. MULIA ABADI", address: "Jln. Sukanagara No. 8 Kahuripan, Tawang", city: "Tasikmalaya", color: "#10b981", lat: -7.322, lng: 108.222},
+            {name: "SENTRA LAS", address: "Jln. Ir. H. Juanda Tasikmalaya", city: "Tasikmalaya", color: "#10b981", lat: -7.326, lng: 108.213},
+            {name: "BENGKEL BUBUT AAN", address: "Jl. Raya Rajapolah No 334 mekarwangi kab Tasikmalaya", city: "Tasikmalaya", color: "#10b981", lat: -7.277, lng: 108.132},
+            {name: "PT. PERTAMINA GEOTHERMAL ENERGY", address: "Kadipaten, Kab. Tasikmalaya", city: "Tasikmalaya", color: "#10b981", lat: -7.179, lng: 108.079},
+            {name: "AANG AIDA", address: "Jl. Raya Rajapolah Tasikmalaya", city: "Tasikmalaya", color: "#10b981", lat: -7.278, lng: 108.130},
+            // CIAMIS (5) - Removed duplicate HARAPAN JAYA
+            {name: "HARAPAN JAYA", address: "JL. Baru Sindangkasih Cikoneng, Ciamis", city: "Ciamis", color: "#ec4899", lat: -7.338, lng: 108.355},
+            {name: "B. LAS & BUBUT EGI JAPRA", address: "Jl. Tubagus Abdullah Sindangkasih Kec Purbaru", city: "Ciamis", color: "#ec4899", lat: -7.335, lng: 108.352},
+            {name: "LOST CONTROL", address: "Jl. Pamayang Kec. Cijeungjing, Ciamis", city: "Ciamis", color: "#ec4899", lat: -7.298, lng: 108.380},
+            {name: "CV MITRA TEKNIK", address: "Pasar Sindang Kasih Cikoneng, Ciamis", city: "Ciamis", color: "#ec4899", lat: -7.340, lng: 108.356},
+            {name: "LATANZA JAYA TECH", address: "Jl. Yos Sudarso No.87, Ciamis", city: "Ciamis", color: "#ec4899", lat: -7.328, lng: 108.348},
+        ];
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let notesVisible = false;
+
+        function init() {
+            createIndicators();
+            updateProgressBar();
+            updateSpeakerNotes();
+            initCharts();
+            
+            // Initialize Leaflet map after a short delay (ensure DOM is ready)
+            setTimeout(() => {
+                initLeafletMap();
+            }, 100);
+            
+            renderCompanyCards('all');
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+                else if (e.key === 'ArrowLeft') prevSlide();
+                else if (e.key === 'n') toggleNotes();
+            });
+            
+            // Touch/Swipe navigation for mobile
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            
+            const presentation = document.querySelector('.presentation');
+            
+            presentation.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }, { passive: true });
+            
+            presentation.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipe();
+            }, { passive: true });
+            
+            function handleSwipe() {
+                const diffX = touchStartX - touchEndX;
+                const diffY = touchStartY - touchEndY;
+                const threshold = 50; // Minimum swipe distance
+                
+                // Only handle horizontal swipes (if horizontal movement > vertical)
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+                    if (diffX > 0) {
+                        // Swiped left -> next slide
+                        nextSlide();
+                    } else {
+                        // Swiped right -> previous slide
+                        prevSlide();
+                    }
+                }
+            }
+        }
+
+        function renderCompanyCards(filter) {
+            const container = document.getElementById('companyCards');
+            container.innerHTML = '';
+            const filtered = filter === 'all' ? companies : companies.filter(c => c.city.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach((company) => {
+                const card = document.createElement('div');
+                card.className = 'company-card';
+                card.innerHTML = `<h5><span class="marker" style="background: ${company.color}"></span>${company.name}</h5><p>${company.address}</p><span class="badge" style="background: ${company.color}22; color: ${company.color}">${company.city}</span>`;
+                card.onclick = () => selectCompany(company, card);
+                container.appendChild(card);
+            });
+        }
+
+        function filterCompanies(region) {
+            // Update active tab
+            document.querySelectorAll('#mapTabs .region-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Render company cards for selected region
+            renderCompanyCards(region);
+            
+            // Update Leaflet map with markers for selected region
+            updateMapMarkers(region);
+        }
+
+        // Leaflet map variables
+        let leafletMap = null;
+        let markersLayer = null;
+        let mapInitialized = false;
+
+        function initLeafletMap() {
+            if (mapInitialized) return;
+            mapInitialized = true;
+            
+            const mapContainer = document.getElementById('leafletMap');
+            if (!mapContainer) return;
+            
+            // Initialize map centered on Jawa Barat
+            leafletMap = L.map('leafletMap', {
+                center: [-6.9, 107.5],
+                zoom: 8,
+                zoomControl: true,
+                attributionControl: false
+            });
+            
+            // Add OpenStreetMap tiles with faster loading options
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap',
+                maxZoom: 18,
+                updateWhenIdle: true,
+                updateWhenZooming: false
+            }).addTo(leafletMap);
+            
+            // Create markers layer group
+            markersLayer = L.layerGroup().addTo(leafletMap);
+            
+            // Add all company markers initially
+            updateMapMarkers('all');
+            
+            // Force immediate size update
+            setTimeout(() => leafletMap.invalidateSize(), 50);
+            setTimeout(() => leafletMap.invalidateSize(), 200);
+            setTimeout(() => leafletMap.invalidateSize(), 500);
+            setTimeout(() => leafletMap.invalidateSize(), 1000);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (leafletMap) leafletMap.invalidateSize();
+            });
+        }
+        
+        // Refresh map when slide becomes visible - more aggressive
+        function refreshMapOnSlide() {
+            if (leafletMap) {
+                // Multiple invalidations to ensure tiles load
+                leafletMap.invalidateSize();
+                setTimeout(() => {
+                    leafletMap.invalidateSize();
+                    leafletMap.setView([-6.9, 107.5], 8);
+                }, 100);
+                setTimeout(() => leafletMap.invalidateSize(), 300);
+                setTimeout(() => leafletMap.invalidateSize(), 600);
+                setTimeout(() => {
+                    leafletMap.invalidateSize();
+                    // Force tile redraw
+                    leafletMap.eachLayer(layer => {
+                        if (layer.redraw) layer.redraw();
+                    });
+                }, 1000);
+            } else {
+                initLeafletMap();
+            }
+        }
+
+        function updateMapMarkers(region) {
+            if (!leafletMap || !markersLayer) return;
+            
+            // Clear existing markers
+            markersLayer.clearLayers();
+            
+            // Filter companies
+            const filtered = region === 'all' ? companies : companies.filter(c => c.city.toLowerCase().includes(region.toLowerCase()));
+            
+            // Add markers for each company
+            const bounds = [];
+            filtered.forEach(company => {
+                if (company.lat && company.lng) {
+                    // Create custom icon with company color
+                    const icon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background: ${company.color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [18, 18],
+                        iconAnchor: [9, 9]
+                    });
+                    
+                    const marker = L.marker([company.lat, company.lng], {icon: icon})
+                        .bindPopup(`<b>${company.name}</b><br>${company.address}<br><span style="color: ${company.color}; font-weight: 600;">${company.city}</span>`)
+                        .addTo(markersLayer);
+                    
+                    bounds.push([company.lat, company.lng]);
+                }
+            });
+            
+            // Fit map to bounds of markers
+            if (bounds.length > 0) {
+                if (region === 'all') {
+                    leafletMap.setView([-6.9, 107.5], 8);
+                } else {
+                    const latLngBounds = L.latLngBounds(bounds);
+                    leafletMap.fitBounds(latLngBounds, {padding: [30, 30], maxZoom: 13});
+                }
+            }
+        }
+
+        // Tab switching for company list slide
+        function showCompanyTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.company-tab-content').forEach(tab => tab.style.display = 'none');
+            // Show selected tab
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            // Update active button
+            document.querySelectorAll('#companyTabs .region-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function selectCompany(company, cardElement) {
+            document.querySelectorAll('.company-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            
+            // Focus on selected company in Leaflet map
+            if (leafletMap && company.lat && company.lng) {
+                leafletMap.setView([company.lat, company.lng], 15);
+                
+                // Open popup for this company
+                markersLayer.eachLayer(layer => {
+                    if (layer.getLatLng().lat === company.lat && layer.getLatLng().lng === company.lng) {
+                        layer.openPopup();
+                    }
+                });
+            }
+        }
+
+        // Video player functions
+        function playVideo() {
+            const video = document.getElementById('profileVideo');
+            const overlay = document.getElementById('playOverlay');
+            if (video) {
+                video.play();
+                if (overlay) overlay.style.display = 'none';
+            }
+        }
+
+        // Handle video events
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('profileVideo');
+            const overlay = document.getElementById('playOverlay');
+            
+            if (video && overlay) {
+                video.addEventListener('play', () => overlay.style.display = 'none');
+                video.addEventListener('pause', () => overlay.style.display = 'flex');
+                video.addEventListener('ended', () => overlay.style.display = 'flex');
+            }
+        });
+
+        function createIndicators() {
+            const container = document.getElementById('slideIndicator');
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = `indicator-dot ${i === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function updateIndicators() { document.querySelectorAll('.indicator-dot').forEach((dot, i) => { dot.className = `indicator-dot ${i === currentSlide ? 'active' : ''}`; }); }
+        function updateProgressBar() { document.getElementById('progressBar').style.width = `${((currentSlide + 1) / totalSlides) * 100}%`; }
+        function updateSpeakerNotes() { document.getElementById('notesContent').textContent = slides[currentSlide].dataset.notes || ''; }
+        
+        // Count-up animation for stat values
+        function animateCountUp(element, target, duration = 1500) {
+            const start = 0;
+            const startTime = performance.now();
+            const isDecimal = String(target).includes('.');
+            const isPercentage = String(element.textContent).includes('%');
+            
+            function easeOutQuart(t) {
+                return 1 - Math.pow(1 - t, 4);
+            }
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = easeOutQuart(progress);
+                const current = start + (target - start) * easedProgress;
+                
+                if (isDecimal) {
+                    element.textContent = current.toFixed(1) + (isPercentage ? '%' : '');
+                } else {
+                    element.textContent = Math.floor(current) + (isPercentage ? '%' : '');
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = target + (isPercentage ? '%' : '');
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        function animateSlideStats(slideIndex) {
+            const slide = slides[slideIndex];
+            const statValues = slide.querySelectorAll('.stat-value');
+            
+            statValues.forEach(el => {
+                const text = el.textContent.trim();
+                const numericValue = parseFloat(text.replace('%', '').replace(',', '.'));
+                
+                if (!isNaN(numericValue)) {
+                    el.dataset.target = numericValue;
+                    el.dataset.hasPercent = text.includes('%') ? 'true' : 'false';
+                    
+                    // Start animation
+                    animateCountUp(el, numericValue, 1500);
+                }
+            });
+            
+            // Also animate closing stat values
+            const closingStats = slide.querySelectorAll('.closing-stat-value');
+            closingStats.forEach(el => {
+                const text = el.textContent.trim();
+                const numericValue = parseFloat(text.replace('%', '').replace(',', '.'));
+                
+                if (!isNaN(numericValue)) {
+                    animateCountUp(el, numericValue, 1500);
+                }
+            });
+        }
+        
+        function goToSlide(index) { 
+            slides[currentSlide].classList.remove('active'); 
+            currentSlide = index; 
+            slides[currentSlide].classList.add('active'); 
+            updateIndicators(); 
+            updateProgressBar(); 
+            updateSpeakerNotes();
+            
+            // Trigger count-up animation for new slide
+            setTimeout(() => animateSlideStats(currentSlide), 300);
+            
+            // Trigger chart animation for new slide
+            setTimeout(() => animateChartsOnSlide(currentSlide), 200);
+            
+            // Refresh map when entering map slide (slide index 8)
+            if (currentSlide === 8) {
+                setTimeout(() => refreshMapOnSlide(), 150);
+            }
+        }
+        function nextSlide() { if (currentSlide < totalSlides - 1) goToSlide(currentSlide + 1); }
+        function prevSlide() { if (currentSlide > 0) goToSlide(currentSlide - 1); }
+        function toggleNotes() { notesVisible = !notesVisible; document.getElementById('speakerNotes').className = `speaker-notes ${notesVisible ? 'visible' : ''}`; }
+
+        // Store chart instances for animation reset
+        let chartInstances = {};
+
+        function initCharts() {
+            // Detect mobile for responsive chart options
+            const isMobile = window.innerWidth <= 768;
+            const isSmallMobile = window.innerWidth <= 480;
+            
+            // Animation settings
+            const chartAnimation = {
+                duration: 1500,
+                easing: 'easeOutQuart',
+                delay: (context) => context.dataIndex * 100
+            };
+
+            // Responsive legend and font sizes
+            const legendFontSize = isSmallMobile ? 9 : (isMobile ? 10 : 11);
+            const datalabelFontSize = isSmallMobile ? 10 : (isMobile ? 12 : 14);
+            const legendPosition = isMobile ? 'bottom' : 'right';
+
+            // 3D-like options with datalabels and animation
+            const doughnut3DOptions = {
+                responsive: true, 
+                maintainAspectRatio: false,
+                cutout: isMobile ? '45%' : '55%',
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: { 
+                        position: legendPosition, 
+                        labels: { 
+                            color: '#f8fafc', 
+                            font: { size: legendFontSize, weight: '500' }, 
+                            padding: isMobile ? 8 : 12, 
+                            usePointStyle: true,
+                            boxWidth: isMobile ? 10 : 15
+                        } 
+                    },
+                    datalabels: {
+                        color: '#fff', 
+                        font: { weight: 'bold', size: datalabelFontSize },
+                        formatter: (value) => value,
+                        textShadowBlur: 4, 
+                        textShadowColor: 'rgba(0,0,0,0.5)',
+                        display: isSmallMobile ? false : true
+                    }
+                },
+                elements: { arc: { borderWidth: isMobile ? 2 : 3, borderColor: '#0f172a', hoverOffset: isMobile ? 8 : 15 } }
+            };
+
+            const bar3DOptions = {
+                responsive: true, 
+                maintainAspectRatio: false, 
+                indexAxis: 'y',
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart',
+                    delay: (context) => context.dataIndex * 150
+                },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { 
+                        anchor: 'center', 
+                        align: 'center', 
+                        color: '#fff', 
+                        font: { weight: 'bold', size: datalabelFontSize - 1 }, 
+                        formatter: (value) => value, 
+                        textShadowBlur: 3, 
+                        textShadowColor: 'rgba(0,0,0,0.5)',
+                        display: isSmallMobile ? false : true
+                    }
+                },
+                scales: {
+                    x: { 
+                        ticks: { color: '#94a3b8', font: { size: isMobile ? 9 : 11 } }, 
+                        grid: { color: 'rgba(148,163,184,0.1)' } 
+                    },
+                    y: { 
+                        ticks: { color: '#f8fafc', font: { size: isMobile ? 9 : 11 } }, 
+                        grid: { display: false } 
+                    }
+                },
+                barThickness: isMobile ? 18 : 28
+            };
+
+            // Career Chart (3D Doughnut)
+            chartInstances.careerChart = new Chart(document.getElementById('careerChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bekerja (90.8%)', 'Kuliah (6.4%)', 'Wirausaha (2.8%)'],
+                    datasets: [{ data: [128, 9, 4], backgroundColor: ['#1e40af', '#10b981', '#f59e0b'], borderWidth: 4, borderColor: '#0f172a', hoverBorderWidth: 2, hoverBorderColor: '#fff' }]
+                },
+                options: doughnut3DOptions
+            });
+
+            // Region Chart (3D Bar)
+            chartInstances.regionChart = new Chart(document.getElementById('regionChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Tasikmalaya', 'Bandung', 'Cikarang', 'Karawang', 'Lainnya'],
+                    datasets: [{ data: [60, 49, 14, 8, 10], backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#64748b'], borderRadius: 8, borderSkipped: false, barThickness: 28 }]
+                },
+                options: bar3DOptions
+            });
+
+            // Readiness Chart (3D Doughnut)
+            chartInstances.readinessChart = new Chart(document.getElementById('readinessChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sudah Rencana (84.4%)', 'Belum (15.6%)'],
+                    datasets: [{ data: [119, 22], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 4, borderColor: '#0f172a' }]
+                },
+                options: doughnut3DOptions
+            });
+
+            // Competency Chart (3D Bar)
+            chartInstances.competencyChart = new Chart(document.getElementById('competencyChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Bubut Konvensional', 'Frais Konvensional', 'CNC Bubut', 'Fabrikasi/Las', 'Desain Gambar', 'Multi-skill'],
+                    datasets: [{ data: [103, 8, 5, 5, 4, 16], backgroundColor: ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7', '#d97706'], borderRadius: 8, barThickness: 22 }]
+                },
+                options: bar3DOptions
+            });
+
+            // Accommodation Chart (3D Doughnut)
+            chartInstances.accommodationChart = new Chart(document.getElementById('accommodationChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ngekost (50.4%)', 'Rumah Orangtua (42.5%)', 'Saudara (4.3%)', 'Mess (2.1%)'],
+                    datasets: [{ data: [71, 60, 6, 3], backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'], borderWidth: 4, borderColor: '#0f172a' }]
+                },
+                options: { ...doughnut3DOptions, plugins: { ...doughnut3DOptions.plugins, title: { display: true, text: '🏠 Tempat Tinggal', color: '#f59e0b', font: { size: 12, weight: '600' } } } }
+            });
+
+            // Transport Chart (3D Doughnut)
+            chartInstances.transportChart = new Chart(document.getElementById('transportChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mandiri (48.9%)', 'Diantar Orangtua (28.4%)', 'Lokal (13.5%)', 'Sekolah (5.7%)', 'Pribadi (2.8%)'],
+                    datasets: [{ data: [69, 40, 19, 8, 4], backgroundColor: ['#3b82f6', '#10b981', '#64748b', '#f59e0b', '#8b5cf6'], borderWidth: 4, borderColor: '#0f172a' }]
+                },
+                options: { ...doughnut3DOptions, plugins: { ...doughnut3DOptions.plugins, title: { display: true, text: '🚗 Transportasi', color: '#f59e0b', font: { size: 12, weight: '600' } } } }
+            });
+        }
+
+        // Reset chart animations when slide becomes active
+        function animateChartsOnSlide(slideIndex) {
+            const slide = slides[slideIndex];
+            const canvases = slide.querySelectorAll('canvas');
+            
+            canvases.forEach(canvas => {
+                const chartId = canvas.id;
+                if (chartInstances[chartId]) {
+                    const chart = chartInstances[chartId];
+                    
+                    // Store original data
+                    const originalData = chart.data.datasets.map(ds => [...ds.data]);
+                    
+                    // Set data to zero for animation start
+                    chart.data.datasets.forEach(ds => {
+                        ds.data = ds.data.map(() => 0);
+                    });
+                    chart.update('none'); // Update without animation
+                    
+                    // Restore original data with animation
+                    setTimeout(() => {
+                        chart.data.datasets.forEach((ds, i) => {
+                            ds.data = originalData[i];
+                        });
+                        chart.update('default'); // Update with animation
+                    }, 50);
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
